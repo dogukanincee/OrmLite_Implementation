@@ -52,4 +52,10 @@
         android:layout_height="wrap_content"
         android:text="Retrieve" />
 
+    <Button
+        android:id="@+id/clearButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Clear Database" />
+
 </LinearLayout>

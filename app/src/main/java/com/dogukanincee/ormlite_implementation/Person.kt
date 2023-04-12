@@ -13,12 +13,14 @@ import com.j256.ormlite.table.DatabaseTable
 @DatabaseTable(tableName = "persons")
 data class Person(
     @DatabaseField(generatedId = true)
-    val id: Int? = null,
-    @DatabaseField
-    val name: String = "", // default value for name
-    @DatabaseField
-    val age: Int = 0 // default value for age
+    val id: Int = 0,
+
+    @DatabaseField(canBeNull = false)
+    val name: String,
+
+    @DatabaseField(canBeNull = false)
+    val age: Int
 ) {
     // Default constructor required by ORMLite
-    constructor() : this(null, "", 0)
+    constructor() : this(0, "", 0)
 }

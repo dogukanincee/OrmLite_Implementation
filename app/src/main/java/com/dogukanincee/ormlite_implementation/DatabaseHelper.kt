@@ -1,7 +1,6 @@
-package com.dogukanincee.ormlite_implementation
-
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import com.dogukanincee.ormlite_implementation.Person
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper
 import com.j256.ormlite.support.ConnectionSource
 import com.j256.ormlite.table.TableUtils
@@ -16,7 +15,7 @@ class DatabaseHelper(context: Context) :
 
     companion object {
         private const val DATABASE_NAME = "mydatabase.db"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2
     }
 
     /**
@@ -26,7 +25,16 @@ class DatabaseHelper(context: Context) :
      * @param connectionSource The connection source to use for the table creation.
      */
     override fun onCreate(database: SQLiteDatabase?, connectionSource: ConnectionSource?) {
-        TableUtils.createTable(connectionSource, Person::class.java)
+        clearData(database)
+        TableUtils.createTableIfNotExists(connectionSource, Person::class.java)
+    }
+
+    private fun clearData(database: SQLiteDatabase?) {
+        database?.let {
+            it.execSQL("DELETE FROM persons;")
+            it.execSQL("DELETE FROM sqlite_sequence WHERE name='persons';")
+            it.execSQL("VACUUM;")
+        }
     }
 
     /**
@@ -43,7 +51,10 @@ class DatabaseHelper(context: Context) :
         oldVersion: Int,
         newVersion: Int
     ) {
-        TableUtils.dropTable<Person, Any>(connectionSource, Person::class.java, true)
-        onCreate(database, connectionSource)
+        if (oldVersion < 2) {
+            // Migration from version 1 to version 2
+            TableUtils.dropTable<Person, Int>(connectionSource, Person::class.java, true)
+            onCreate(database, connectionSource)
+        }
     }
 }

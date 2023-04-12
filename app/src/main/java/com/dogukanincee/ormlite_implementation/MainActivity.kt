@@ -1,11 +1,14 @@
 package com.dogukanincee.ormlite_implementation
 
+import DatabaseHelper
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.InputFilter
 import android.widget.Toast
 import com.j256.ormlite.android.apptools.OpenHelperManager
 import com.dogukanincee.ormlite_implementation.databinding.ActivityMainBinding
+import com.j256.ormlite.table.TableUtils
+import java.sql.SQLException
 
 /**
  * The main activity of the application.
@@ -17,7 +20,7 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Called when the activity is starting. This method initializes the view binding and the database helper,
-     * and sets up the click listeners for the save and retrieve buttons.
+     * and sets up the click listeners for the save, retrieve, and clear database buttons.
      *
      * @param savedInstanceState If the activity is being re-initialized after previously being shut down
      * then this Bundle contains the data it most recently supplied in onSaveInstanceState.
@@ -50,19 +53,51 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val person = Person(
-                name = name,
-                age = age.toInt()
-            )
             val dao = databaseHelper.getDao(Person::class.java)
-            dao.create(person)
-            Toast.makeText(this, "Person saved!", Toast.LENGTH_SHORT).show()
+
+            val existingPersons = dao.queryForEq("name", name)
+
+            if (existingPersons.isEmpty()) {
+                val person = Person(
+                    name = name,
+                    age = age.toInt()
+                )
+                dao.create(person)
+                Toast.makeText(this, "Person saved!", Toast.LENGTH_SHORT).show()
+            } else {
+                val sameAgePerson = existingPersons.find { it.age == age.toIntOrNull() }
+                if (sameAgePerson != null) {
+                    Toast.makeText(
+                        this,
+                        "Person with the same name and age already exists",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    val person = Person(
+                        name = name,
+                        age = age.toInt()
+                    )
+                    dao.create(person)
+                    Toast.makeText(this, "Person saved!", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
         binding.retrieveButton.setOnClickListener {
             val dao = databaseHelper.getDao(Person::class.java)
             val persons = dao.queryForAll()
             binding.personsTextView.text = persons.joinToString(separator = "\n")
+        }
+
+        binding.clearButton.setOnClickListener {
+            try {
+                TableUtils.clearTable(databaseHelper.connectionSource, Person::class.java)
+                binding.personsTextView.text = "Database is cleared."
+                Toast.makeText(this, "Database is cleared.", Toast.LENGTH_SHORT).show()
+            } catch (e: SQLException) {
+                e.printStackTrace()
+                Toast.makeText(this, "Error clearing database", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
