@@ -38,24 +38,30 @@
         android:layout_height="wrap_content"
         android:text="Save" />
 
-    <TextView
-        android:id="@+id/personsTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="16dp"
-        android:text="Persons:"
-        android:textStyle="bold" />
-
     <Button
         android:id="@+id/retrieveButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="Retrieve" />
 
     <Button
         android:id="@+id/clearButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="Clear Database" />
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/personsTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textStyle="bold" />
+    </ScrollView>
 </LinearLayout>
