@@ -34,7 +34,6 @@ class MainActivity : AppCompatActivity() {
 
         // Create the ViewModel instance
         viewModel = ViewModelProvider(this)[PersonViewModel::class.java]
-        viewModel.lifecycleOwner = this
 
         // Initialize views
         recyclerView = findViewById(R.id.recyclerView)
