@@ -1,4 +1,4 @@
-package com.dogukanincee.ormlite_implementation
+package com.dogukanincee.ormlite_implementation.view
 
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
+import com.dogukanincee.ormlite_implementation.R
 import com.dogukanincee.ormlite_implementation.model.Person
 import com.dogukanincee.ormlite_implementation.view_model.PersonViewModel
 

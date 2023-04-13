@@ -6,7 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.dogukanincee.ormlite_implementation.DatabaseHelper
+import com.dogukanincee.ormlite_implementation.model.DatabaseHelper
 import com.dogukanincee.ormlite_implementation.model.Person
 
 /**

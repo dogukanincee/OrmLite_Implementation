@@ -1,9 +1,8 @@
-package com.dogukanincee.ormlite_implementation
+package com.dogukanincee.ormlite_implementation.model
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
-import com.dogukanincee.ormlite_implementation.model.Person
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper
 import com.j256.ormlite.support.ConnectionSource
 import com.j256.ormlite.table.TableUtils

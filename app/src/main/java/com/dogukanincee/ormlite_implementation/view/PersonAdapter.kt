@@ -1,4 +1,4 @@
-package com.dogukanincee.ormlite_implementation
+package com.dogukanincee.ormlite_implementation.view
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.dogukanincee.ormlite_implementation.R
 import com.dogukanincee.ormlite_implementation.model.Person
 
 /**
