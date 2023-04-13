@@ -1,4 +1,4 @@
-package com.dogukanincee.ormlite_implementation
+package com.dogukanincee.ormlite_implementation.model
 
 import com.j256.ormlite.field.DatabaseField
 import com.j256.ormlite.table.DatabaseTable

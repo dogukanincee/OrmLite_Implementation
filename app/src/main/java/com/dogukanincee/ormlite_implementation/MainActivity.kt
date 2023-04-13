@@ -1,111 +1,100 @@
 package com.dogukanincee.ormlite_implementation
 
-import DatabaseHelper
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.text.InputFilter
+import android.util.Log
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ScrollView
+import android.widget.TextView
 import android.widget.Toast
-import com.j256.ormlite.android.apptools.OpenHelperManager
-import com.dogukanincee.ormlite_implementation.databinding.ActivityMainBinding
-import com.j256.ormlite.table.TableUtils
-import java.sql.SQLException
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.RecyclerView
+import com.dogukanincee.ormlite_implementation.model.Person
+import com.dogukanincee.ormlite_implementation.view_model.PersonViewModel
 
 /**
  * The main activity of the application.
  */
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var databaseHelper: DatabaseHelper
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var viewModel: PersonViewModel
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var saveButton: Button
+    private lateinit var nameEditText: EditText
+    private lateinit var ageEditText: EditText
+    private lateinit var clearButton: Button
+    private lateinit var scrollView: ScrollView
+    private lateinit var personsTextView: TextView
 
-    /**
-     * Called when the activity is starting. This method initializes the view binding and the database helper,
-     * and sets up the click listeners for the save, retrieve, and clear database buttons.
-     *
-     * @param savedInstanceState If the activity is being re-initialized after previously being shut down
-     * then this Bundle contains the data it most recently supplied in onSaveInstanceState.
-     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        // Initialize view binding
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        // Create the ViewModel instance
+        viewModel = ViewModelProvider(this)[PersonViewModel::class.java]
+        viewModel.lifecycleOwner = this
 
-        databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper::class.java)
+        // Initialize views
+        recyclerView = findViewById(R.id.recyclerView)
+        saveButton = findViewById(R.id.saveButton)
+        nameEditText = findViewById(R.id.nameEditText)
+        ageEditText = findViewById(R.id.ageEditText)
+        clearButton = findViewById(R.id.clearButton)
+        scrollView = findViewById(R.id.scrollView)
+        personsTextView = findViewById(R.id.personsTextView)
 
-        // Add input filters to nameEditText to allow only alphabetical characters
-        binding.nameEditText.filters = arrayOf(InputFilter { source, _, _, _, _, _ ->
-            source.toString().filter { it.isLetter() }
-        })
+        // Set up the RecyclerView
+        val adapter = PersonAdapter()
+        recyclerView.adapter = adapter
 
-        binding.saveButton.setOnClickListener {
-            val name = binding.nameEditText.text.toString().trim()
-            val age = binding.ageEditText.text.toString().trim()
+        // Observe the LiveData from the ViewModel and update the RecyclerView and TextView when it changes
+        viewModel.personList.observe(this) { persons ->
+            adapter.submitList(persons)
+            Log.i("MainActivity", "List of persons updated: $persons")
+            val text = persons.joinToString(separator = "\n") { "${it.name}, ${it.age}" }
+            personsTextView.text = text
+        }
 
-            if (name.isBlank()) {
-                Toast.makeText(this, "Please enter a name", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+        // Set up the Save button
+        saveButton.setOnClickListener {
+            val name = nameEditText.text.toString()
+            val age = ageEditText.text.toString().toIntOrNull()
 
-            if (age.isBlank() || age.toIntOrNull()?.let { it in 0..99 } != true) {
-                Toast.makeText(this, "Please enter a valid age (0-99)", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            val dao = databaseHelper.getDao(Person::class.java)
-
-            val existingPersons = dao.queryForEq("name", name)
-
-            if (existingPersons.isEmpty()) {
-                val person = Person(
-                    name = name,
-                    age = age.toInt()
-                )
-                dao.create(person)
-                Toast.makeText(this, "Person saved!", Toast.LENGTH_SHORT).show()
+            if (name.matches("[a-zA-Z]+".toRegex()) && age != null) {
+                // Insert the new person into the database and update the RecyclerView and TextView
+                viewModel.insertPerson(Person(name = name, age = age))
+                nameEditText.text.clear()
+                ageEditText.text.clear()
+                Log.i("MainActivity", "New person added: $name, $age")
             } else {
-                val sameAgePerson = existingPersons.find { it.age == age.toIntOrNull() }
-                if (sameAgePerson != null) {
-                    Toast.makeText(
-                        this,
-                        "Person with the same name and age already exists",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    val person = Person(
-                        name = name,
-                        age = age.toInt()
-                    )
-                    dao.create(person)
-                    Toast.makeText(this, "Person saved!", Toast.LENGTH_SHORT).show()
-                }
+                // Show an error message if the name or age is invalid
+                Toast.makeText(this, "Please enter a valid name and age", Toast.LENGTH_SHORT).show()
+                nameEditText.text.clear()
+                ageEditText.text.clear()
             }
         }
 
-        binding.retrieveButton.setOnClickListener {
-            val dao = databaseHelper.getDao(Person::class.java)
-            val persons = dao.queryForAll()
-            binding.personsTextView.text = persons.joinToString(separator = "\n")
-        }
+        // Set up the Clear button
+        clearButton.setOnClickListener {
+            val persons = viewModel.personList.value
 
-        binding.clearButton.setOnClickListener {
-            try {
-                TableUtils.clearTable(databaseHelper.connectionSource, Person::class.java)
-                binding.personsTextView.text = "Database is cleared."
-                Toast.makeText(this, "Database is cleared.", Toast.LENGTH_SHORT).show()
-            } catch (e: SQLException) {
-                e.printStackTrace()
-                Toast.makeText(this, "Error clearing database", Toast.LENGTH_SHORT).show()
+            if (persons != null && persons.isNotEmpty()) {
+                // Clear the database and update the RecyclerView and TextView
+                viewModel.clearDatabase()
+                Log.i("MainActivity", "Database cleared")
+            } else {
+                // Show a message if the database has no entries
+                Toast.makeText(this, "There are no entries in the database", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
-    }
 
-    /**
-     * Called when the activity is destroyed. This method releases the database helper.
-     */
-    override fun onDestroy() {
-        super.onDestroy()
-        OpenHelperManager.releaseHelper()
+        // Adjust the RecyclerView height to avoid overlapping with the other views
+        recyclerView.post {
+            val layoutParams = recyclerView.layoutParams
+            layoutParams.height = scrollView.height - personsTextView.height
+            recyclerView.layoutParams = layoutParams
+        }
     }
 }
