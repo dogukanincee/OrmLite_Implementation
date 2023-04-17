@@ -20,8 +20,11 @@ class PersonViewModel(application: Application) : AndroidViewModel(application) 
         private const val TAG = "PersonViewModel"
     }
 
-    private val repository: PersonRepository = PersonRepository(DatabaseHelper(application))
+    private val repository: PersonRepository by lazy {
+        PersonRepository(DatabaseHelper(application))
+    }
     val personList: MutableLiveData<List<Person>> = MutableLiveData(emptyList())
+
 
     /**
      * Refreshes the list of persons and updates the `personList` LiveData object.
